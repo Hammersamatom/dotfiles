@@ -1,3 +1,7 @@
 set nowrap
 include ~/.nano/c.nanorc
 include ~/.nano/html.nanorc
+include ~/.nano/pkgbuild.nanorc
+
+set tabsize 4
+set constantshow
