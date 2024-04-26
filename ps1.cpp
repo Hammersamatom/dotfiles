@@ -2,9 +2,9 @@
 #include <cstdio>
 #include <cstdlib>
 #include <exception>
+#include <fmt/format.h>
 #include <string>
 #include <functional>
-#include <iostream>
 
 #include <fmt/core.h>
 #include <fmt/color.h>
@@ -98,6 +98,31 @@ std::size_t strip_char(std::string& input, char delimiter, DIRECTION dir = BACK)
 	return count;
 }
 
+std::vector<std::string> split(std::string input, char delimiter = '\n')
+{
+	std::vector<std::string> output;
+	while (input.length())
+	{
+		output.push_back(input.substr(0, input.find(delimiter)));
+		if (input.find(delimiter) == std::string::npos)
+			break;
+		input = input.substr(input.find(delimiter) + 1);
+	}
+	return output;
+}
+
+void purge(std::vector<std::string>& in, std::string target = "")
+{
+	for (std::size_t i = 0; i < in.size(); i++)
+	{
+		if (in[i] == target)
+		{
+			in.erase(in.begin() + i);
+			i--;
+		}
+	}
+}
+
 std::string get_git_branch()
 {
 	std::string branch;
@@ -108,18 +133,39 @@ std::string get_git_branch()
 
 std::string get_current_dir()
 {
-	std::string path = "";
-	
 	try
 	{
-		path = std::getenv("PWD");
+		return std::getenv("PWD");
 	}
 	catch (std::exception& e)
 	{
-		path = fmt::format("Failed to get Path: {}", e.what());
+		return fmt::format("Failed to get Path: {}", e.what());
+	}
+}
+
+std::string abbrev_dir(std::size_t max_len = 20)
+{
+	std::string cur_dur = get_current_dir();
+	std::vector<std::string> splits = split(cur_dur, '/');
+	purge(splits);
+
+	if (cur_dur.length() < max_len)
+		return cur_dur;
+
+	std::string output;
+	for (const auto& str : splits)
+	{
+		if (&str == &splits.back())
+		{
+			output += std::string("/") + str;
+		}
+		else
+		{
+			output += std::string("/") + str[0];
+		}
 	}
 
-	return path;
+	return output;
 }
 
 std::string get_current_user()
@@ -130,14 +176,37 @@ std::string get_current_user()
 	return name;
 }
 
+std::size_t last_return()
+{
+	std::size_t code;
+	runCommand("echo $?", [&code](const std::string& buf) -> void {
+		code = std::stoi(buf);
+	}, 3);
+	return code;
+}
+
 int main(int argc, char* argv[])
 {
-	fmt::print(fmt::bg(fmt::color::dark_cyan) | fmt::fg(fmt::color::white), " {} ", get_current_user());
-	fmt::print(fmt::bg(fmt::color::black) | fmt::fg(fmt::color::dark_cyan), "{}", codepointToUTF8(0xe0b4));
-	fmt::print(fmt::bg(fmt::color::black) | fmt::fg(fmt::color::white), " {} ", get_current_dir());	
-	fmt::print(fmt::bg(fmt::color::brown) | fmt::fg(fmt::color::black), "{}", codepointToUTF8(0xe0b4));
-	fmt::print(fmt::bg(fmt::color::brown) | fmt::fg(fmt::color::white), "  {} ", get_git_branch());
-	fmt::print(fmt::fg(fmt::color::brown), "{} ", codepointToUTF8(0xe0b4));
-
+	std::size_t lrc = std::stoi(argv[1]);
+	// Print last return code and warn if it's not 0
+	fmt::print("{}", lrc ?
+		fmt::styled(" 󰅖 ", fmt::bg(fmt::color::red) | fmt::fg(fmt::color::white)) :
+		fmt::styled(" 󰄬 ", fmt::bg(fmt::color::green) | fmt::fg(fmt::color::white))
+	);
+	fmt::print((lrc ? fmt::bg(fmt::color::red) : fmt::bg(fmt::color::green)) | fmt::fg(fmt::color::black), "{}", codepointToUTF8(0xe0b6));
+	fmt::print(fmt::bg(fmt::color::black) | fmt::fg(fmt::color::white), " {} ", get_current_user());
+	fmt::print(fmt::bg(fmt::color::black) | fmt::fg(fmt::rgb(48, 48, 48)), "{}", codepointToUTF8(0xe0b6));
+	fmt::print(fmt::bg(fmt::rgb(48, 48, 48)) | fmt::fg(fmt::color::white), " {} ", abbrev_dir(30));	
+	
+	std::string cur_branch = get_git_branch();
+	if (!cur_branch.empty())
+	{
+		fmt::print(fmt::bg(fmt::rgb(48, 48, 48)) | fmt::fg(fmt::color::saddle_brown), "{}", codepointToUTF8(0xe0b6));
+		fmt::print(fmt::bg(fmt::color::saddle_brown) | fmt::fg(fmt::color::white), "  {}", get_git_branch());
+	}
+	fmt::print(fmt::fg(cur_branch.empty() ? fmt::rgb(48, 48, 48) : fmt::color::saddle_brown), "{} ", codepointToUTF8(0xe0b4));
+	
 	return 0;
 }
+
+
