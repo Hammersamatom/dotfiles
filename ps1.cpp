@@ -133,14 +133,10 @@ std::string get_git_branch()
 
 std::string get_current_dir()
 {
-	try
-	{
-		return std::getenv("PWD");
-	}
-	catch (std::exception& e)
-	{
-		return fmt::format("Failed to get Path: {}", e.what());
-	}
+	std::string path;
+	int retval = runCommand("dirs", [&path](const std::string& buf) -> void{ path += buf; }, 512);
+	strip_char(path, '\n');
+	return path;
 }
 
 std::string abbrev_dir(std::size_t max_len = 20)
