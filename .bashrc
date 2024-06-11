@@ -15,4 +15,4 @@ shopt -s histappend
 
 
 PATH="$PATH:/media/TrueVol/Projects/Other/dotfiles"
-PS1="\$(ps1lol \$?)"
+PS1="\$(ps1lol \$?)\n "

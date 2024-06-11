@@ -145,6 +145,9 @@ std::string abbrev_dir(std::size_t max_len = 20)
 	std::vector<std::string> splits = split(cur_dur, '/');
 	purge(splits);
 
+	if (cur_dur == "~")
+		return codepointToUTF8(0xef85);
+
 	if (cur_dur.length() < max_len)
 		return cur_dur;
 
