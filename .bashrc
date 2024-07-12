@@ -14,5 +14,5 @@ HISTFILESIZE=-1
 shopt -s histappend
 
 
-PATH="$PATH:/media/TrueVol/Projects/Other/dotfiles"
+PATH="$PATH:/media/TrueVol/Projects/Other/dotfiles/progs/ps1"
 PS1="\$(ps1lol \$?)\n "
